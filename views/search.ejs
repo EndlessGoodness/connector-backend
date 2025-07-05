@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search</title>
+</head>
+<body>
+  <h1>Search Results</h1>
+  <form action="/search" method="GET">
+    <input type="text" name="q" value="<%= query %>" placeholder="Search...">
+    <button type="submit">Search</button>
+  </form>
+  <h2>Users</h2>
+  <% if (users && users.length) { %>
+    <% users.forEach(function(user) { %>
+      <div><a href="/users/<%= user.id %>"><%= user.username %></a></div>
+    <% }) %>
+  <% } else { %>
+    <p>No users found.</p>
+  <% } %>
+  <h2>Posts</h2>
+  <% if (posts && posts.length) { %>
+    <% posts.forEach(function(post) { %>
+      <div><a href="/posts/<%= post.id %>"><%= post.title %></a></div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts found.</p>
+  <% } %>
+  <a href="/">Back to Home</a>
+</body>
+</html>

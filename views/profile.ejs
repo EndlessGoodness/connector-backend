@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+</head>
+<body>
+  <h1>Profile: <%= user.username %></h1>
+  <p>Email: <%= user.email %></p>
+  <p>Bio: <%= user.bio %></p>
+  <img src="<%= user.profilePictureUrl %>" alt="Profile Picture" width="100" />
+  <h2>Your Posts</h2>
+  <% if (user.posts && user.posts.length) { %>
+    <% user.posts.forEach(function(post) { %>
+      <div>
+        <h3><a href="/posts/<%= post.id %>"><%= post.title %></a></h3>
+        <p><%= post.text %></p>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts yet.</p>
+  <% } %>
+  <a href="/">Back to Home</a>
+</body>
+</html>

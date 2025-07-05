@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Notifications</title>
+</head>
+<body>
+  <h1>Notifications</h1>
+  <% if (notifications && notifications.length) { %>
+    <% notifications.forEach(function(notification) { %>
+      <div>
+        <p><%= notification.type %> - <%= notification.sourceType %> - <%= notification.isRead ? 'Read' : 'Unread' %></p>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No notifications.</p>
+  <% } %>
+  <a href="/">Back to Home</a>
+</body>
+</html>

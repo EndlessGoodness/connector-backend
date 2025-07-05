@@ -8,7 +8,7 @@ const isAuthorized= function (req, res, next) {
 
 const express = require('express');
 const router = express.Router();
-const usersControllers = require("../controllers/usersControllers");
+const usersControllers = require("../controllers/usersController");
 
 // List all users
 router.get('/', usersControllers.getAllUsers);

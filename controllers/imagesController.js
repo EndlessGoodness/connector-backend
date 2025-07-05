@@ -1,7 +1,7 @@
  const imagesQueries = require("../queries/imagesQueries");
-const realmsQueries = require("../queries/realmsQueries");
+const realmsQueries = require("../queries/realmsQuery");
 const usersQueries = require("../queries/usersQueries");
-const cloudinary = require("../utils/configs/cloudinary-config");
+const cloudinary = require("../utils/cloudinary-config");
 const fs = require('fs');
 
 module.exports = {

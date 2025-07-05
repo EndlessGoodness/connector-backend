@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Users</title>
+</head>
+<body>
+  <h1>All Users</h1>
+  <% if (users && users.length) { %>
+    <% users.forEach(function(user) { %>
+      <div><a href="/users/<%= user.id %>"><%= user.username %></a></div>
+    <% }) %>
+  <% } else { %>
+    <p>No users found.</p>
+  <% } %>
+  <a href="/">Back to Home</a>
+</body>
+</html>

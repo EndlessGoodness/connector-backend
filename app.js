@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require('bcryptjs');
 const path = require("node:path");
 
 const { Pool } = require("pg");
@@ -13,7 +14,12 @@ const usersRoutes = require("./routes/userRoute");
 const postsRoutes = require("./routes/postRoute");
 const commentsRoutes = require("./routes/commentRoute");
 const imagesRoutes = require("./routes/imagesRoute");
-const searchRoutes = require('./routes/searchRoutes');
+const searchRoutes = require('./routes/searchRoute');
+const realmsRoutes = require("./routes/realmRoute");
+
+const { validateUser } = require('./utils/validator');
+const { validationResult } = require('express-validator');
+const notificationRoutes = require('./routes/notificationsRoutes');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -23,6 +29,8 @@ const pool = new Pool({
   port: process.env.DB_PORT
 });
 const app = express();
+
+socketSetup(server);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -37,23 +45,35 @@ app.get("/", (req, res) =>{
 
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 
-app.post("/sign-up", async (req, res, next) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
-      hashedPassword,
-    ]);
-    res.redirect("/");
-  } catch(err) {
-    return next(err);
+app.post(
+  "/sign-up",
+  validateUser,
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).render("sign-up-form", {
+        errors: errors.array(),
+        user: req.user,
+        formData: req.body
+      });
+    }
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      await pool.query(
+        "INSERT INTO user (email, username, password) VALUES ($1, $2, $3)",
+        [req.body.email, req.body.username, hashedPassword]
+      );
+      res.redirect("/");
+    } catch (err) {
+      return next(err);
+    }
   }
-});
+);
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
-      const { rows } = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+      const { rows } = await pool.query("SELECT * FROM user WHERE username = $1", [username]);
       const user = rows[0];
 
       if (!user) {
@@ -76,7 +96,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+    const { rows } = await pool.query("SELECT * FROM user WHERE id = $1", [id]);
     const user = rows[0];
 
     done(null, user);
@@ -111,6 +131,8 @@ app.use('/posts', ensureAuthenticated, postsRoutes);
 app.use('/comments', ensureAuthenticated, commentsRoutes);
 app.use('/images', ensureAuthenticated, imagesRoutes);
 app.use('/search', ensureAuthenticated, searchRoutes);
+app.use('/realms', ensureAuthenticated, realmsRoutes);
+app.use('/notifications', ensureAuthenticated, notificationRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

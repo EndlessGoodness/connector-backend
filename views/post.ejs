@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Post</title>
+</head>
+<body>
+  <h1><%= post.title %></h1>
+  <p><%= post.text %></p>
+  <p>By <a href="/users/<%= post.authorId %>"><%= post.authorUsername %></a></p>
+  <p>Likes: <%= post.likesCount %></p>
+  <form action="/posts/<%= post.id %>/like" method="POST">
+    <button type="submit">Like</button>
+  </form>
+  <h2>Comments</h2>
+  <% if (post.comments && post.comments.length) { %>
+    <% post.comments.forEach(function(comment) { %>
+      <div>
+        <p><%= comment.comment %> - <%= comment.userUsername %></p>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No comments yet.</p>
+  <% } %>
+  <form action="/posts/<%= post.id %>/comments" method="POST">
+    <textarea name="comment" required></textarea><br>
+    <button type="submit">Add Comment</button>
+  </form>
+  <a href="/">Back to Home</a>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Realm</title>
+</head>
+<body>
+  <h1>Realm: <%= realm.name %></h1>
+  <p>Description: <%= realm.description %></p>
+  <img src="<%= realm.realmPictureUrl %>" alt="Realm Picture" width="100" />
+  <h2>Members</h2>
+  <% if (realm.members && realm.members.length) { %>
+    <% realm.members.forEach(function(member) { %>
+      <div><a href="/users/<%= member.id %>"><%= member.username %></a></div>
+    <% }) %>
+  <% } else { %>
+    <p>No members yet.</p>
+  <% } %>
+  <h2>Posts</h2>
+  <% if (realm.posts && realm.posts.length) { %>
+    <% realm.posts.forEach(function(post) { %>
+      <div><a href="/posts/<%= post.id %>"><%= post.title %></a></div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts yet.</p>
+  <% } %>
+  <a href="/">Back to Home</a>
+</body>
+</html>
