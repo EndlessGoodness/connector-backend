@@ -8,6 +8,7 @@ const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require('passport-local').Strategy;
+const cors = require("cors");
 
 // Import Routes
 const usersRoutes = require("./routes/userRoute");
@@ -38,6 +39,27 @@ app.set("view engine", "ejs");
 app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
+
+const FRONTEND_URL =
+  process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_URL
+    : 'http://localhost:5173';
+
+// Configure CORS
+app.use(cors({
+    origin: FRONTEND_URL, // Allow requests from this origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Adjust based on your needs
+    credentials: true, // Allow credentials
+  }));
+
+  console.log("using frontendurl:", FRONTEND_URL);
+
+app.use((req,res,next) => {
+  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  next();
+});
+app.use(express.json()); // For JSON payloads
+app.use(express.urlencoded({ extended: true })); // For application/x-www-form-urlencoded form-data
 
 app.get("/", (req, res) =>{
     res.render("index",{user:req.user});

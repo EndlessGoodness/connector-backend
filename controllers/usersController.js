@@ -9,20 +9,29 @@ module.exports = {
     getAllUsers: async(req, res) => {
         try {
             const users = await usersQueries.getAllUsers();
-            res.render("users", { users });
+            res.status(200).json({
+                users
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
+        
     },
     getUser: async(req, res) => {
         const { id } = req.params;
         try {
             const user = await usersQueries.getUser("id", id)
-            res.render("profile", { user });
+            res.status(200).json({
+                user
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getSuggested: async (req, res) => {
@@ -50,12 +59,18 @@ module.exports = {
         const limit = parseInt(req.query.limit) || 10;
         const sortField = req.query.sortField || 'createdAt';
         const sortOrder = req.query.sortOrder || 'desc';
+
         try {
             const posts = await postsQueries.getUserPosts(id, page, limit, sortField, sortOrder);
-            res.render("profile", { user: { id }, posts });
+            res.status(200).json({
+                posts,
+            })
+
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserDrafts: async (req, res) => {
@@ -66,10 +81,14 @@ module.exports = {
         const sortOrder = req.query.sortOrder || 'desc';
         try {
             const drafts = await postsQueries.getUserDrafts(id, page, limit, sortField, sortOrder);
-            res.render("profile", { user: { id }, drafts });
+            res.status(200).json({
+                posts: drafts
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserLikedPosts: async (req, res) => {
@@ -80,10 +99,15 @@ module.exports = {
         const sortOrder = req.query.sortOrder || 'desc';
         try {
             const posts = await postsQueries.getUserLikedPosts(id, page, limit, sortField, sortOrder);
-            res.render("profile", { user: { id }, likedPosts: posts });
+            res.status(200).json({
+                posts,
+            })
+
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserCommentedPosts: async (req, res) => {
@@ -94,10 +118,15 @@ module.exports = {
         const sortOrder = req.query.sortOrder || 'desc';
         try {
             const posts  = await postsQueries.getUserCommentedPosts(id, page, limit, sortField, sortOrder);
-            res.render("profile", { user: { id }, commentedPosts: posts });
+            res.status(200).json({
+                posts
+            })
+
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserFollowers: async (req, res) => {
@@ -106,10 +135,14 @@ module.exports = {
         const limit = parseInt(req.query.limit) || 10;
         try {
             const users = await usersQueries.getUserFollowers(id, page, limit);
-            res.render("profile", { user: { id }, followers: users });
+            res.status(200).json({
+                users
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserFollowing: async (req, res) => {
@@ -118,10 +151,14 @@ module.exports = {
         const limit = parseInt(req.query.limit) || 10;
         try {
             const users = await usersQueries.getUserFollowing(id, page, limit);
-            res.render("profile", { user: { id }, following: users });
+            res.status(200).json({
+                users
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserJoinedRealms: async (req, res) => {
@@ -130,10 +167,14 @@ module.exports = {
         const limit = parseInt(req.query.limit) || 10;
         try {
             const realms = await realmsQueries.getUserJoinedRealms(id, page, limit);
-            res.render("profile", { user: { id }, joinedRealms: realms });
+            res.status(200).json({
+                realms
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     getUserCreatedRealms: async (req, res) => {
@@ -142,62 +183,94 @@ module.exports = {
         const limit = parseInt(req.query.limit) || 10;
         try {
             const realms = await realmsQueries.getUserCreatedRealms(id, page, limit);
-            res.render("profile", { user: { id }, createdRealms: realms });
+            res.status(200).json({
+                realms
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     updateUser: async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).render("error", { message: "Validation failed", errors: errors.array() });
+            return res.status(400).json({
+                errors: errors.array()
+            })
         }
         const { id } = req.params;
         const { username, bio } = req.body;
         try {
+            // If an existing user with the same username is found, and it's not the same user return error
             const existingUser = await usersQueries.existUser("username", username);
             if (existingUser && existingUser.id !== id) {
-                return res.status(400).render("error", { message: "Username is already taken" });
+                return res.status(400).json({
+                    error: 'Username is already taken'
+                });
             }
+
             const updatedUser = await usersQueries.updateUser(id, username, bio);
-            res.redirect(`/users/${id}`); // Redirect to updated profile
+            res.status(200).json({
+                message: "Succesfully updated user details",
+                user: updatedUser
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            console.error("errors caught by controller", error);
+            res.status(500).json({
+                error: error.message
+            })
         } 
     },
     deleteUser: async (req, res) => {
         const { id } = req.params;
         try {
-            await usersQueries.deleteUser(id);
-            res.redirect("/users"); // Redirect to users list after deletion
+            const user = await usersQueries.deleteUser(id);
+            res.status(200).json({
+                message: "Succesfully deleted user",
+                user
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     loggedUserFollow: async (req, res) => {
         const followerId = req.user.id;
         const followingId = req.params.id;
         try{
-            await followsQueries.addFollow(followerId, followingId);
+            const follow = await followsQueries.addFollow(followerId, followingId);
+            res.status(201).json({
+                message: "Succesfully followed user",
+                follow
+            })
+            // Create Notification
             notificationQueries.createUserFollowNotification(followingId, followerId);
-            res.redirect(`/users/${followingId}`); // Redirect to followed user's profile
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     },
     loggedUserUnfollow: async (req, res) => {
         const followerId = req.user.id;
         const followingId = req.params.id;
         try{
-            await followsQueries.removeFollow(followerId, followingId);
-            res.redirect(`/users/${followingId}`); // Redirect to unfollowed user's profile
+            const unfollow = await followsQueries.removeFollow(followerId, followingId);
+            res.status(200).json({
+                message: "Succesfully unfollowed user",
+                unfollow
+            })
         }
         catch(error) {
-            res.status(500).render("error", { message: error.message });
+            res.status(500).json({
+                error: error.message
+            })
         }
     }
 }
