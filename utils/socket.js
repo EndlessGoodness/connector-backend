@@ -1,15 +1,27 @@
 const { Pool } = require('pg');
 require('dotenv').config();
-const databaseUrl = process.env.NODE_ENV === 'test'
-  ? process.env.TEST_DATABASE_URL
-  : process.env.DATABASE_URL;
-const pool = new Pool({ connectionString: databaseUrl });
+
+// Use the same database configuration as the main app
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
+});
+
 const socketIO = require('socket.io');
 
 let io;
 
 module.exports = (server) => {
-    io = socketIO(server);
+    io = socketIO(server, {
+        cors: {
+            origin: ["http://localhost:3000", "http://localhost:5173"],
+            methods: ["GET", "POST"],
+            credentials: true
+        }
+    });
 
     io.on('connection', (socket) => {
         console.log('New client connected:', socket.id);

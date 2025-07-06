@@ -11,7 +11,7 @@ module.exports = {
     addLike: async (userId, postId) => {
         try {
             const query = `
-                INSERT INTO "Like" ("userId", "postId")
+                INSERT INTO "Like" (userid, postid)
                 VALUES ($1, $2)
                 RETURNING *;
             `;
@@ -26,7 +26,7 @@ module.exports = {
         try {
             const query = `
                 DELETE FROM "Like"
-                WHERE "userId" = $1 AND "postId" = $2
+                WHERE userid = $1 AND postid = $2
                 RETURNING *;
             `;
             const { rows } = await pool.query(query, [userId, postId]);

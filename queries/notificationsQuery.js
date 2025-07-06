@@ -12,7 +12,7 @@ module.exports = {
     createUserFollowNotification: async (userId, actorId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, type, sourcetype)
                 VALUES ($1, $2, 'follow', 'USER')
                 RETURNING *;
             `;
@@ -30,7 +30,7 @@ module.exports = {
     createRealmJoinNotification: async (userId, actorId, realmId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", "realmId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, realmid, type, sourcetype)
                 VALUES ($1, $2, $3, 'realm_join', 'REALM')
                 RETURNING *;
             `;
@@ -48,7 +48,7 @@ module.exports = {
     createPostLikeNotification: async (userId, actorId, postId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", "postId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, postid, type, sourcetype)
                 VALUES ($1, $2, $3, 'post_like', 'POST')
                 RETURNING *;
             `;
@@ -66,7 +66,7 @@ module.exports = {
     createPostCommentNotification: async (userId, actorId, postId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", "postId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, postid, type, sourcetype)
                 VALUES ($1, $2, $3, 'post_comment', 'POST')
                 RETURNING *;
             `;
@@ -84,7 +84,7 @@ module.exports = {
     createCommentLikeNotification: async (userId, actorId, commentId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", "commentId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, commentid, type, sourcetype)
                 VALUES ($1, $2, $3, 'comment_like', 'COMMENT')
                 RETURNING *;
             `;
@@ -102,7 +102,7 @@ module.exports = {
     createCommentReplyNotification: async (userId, actorId, commentId) => {
         try {
             const query = `
-                INSERT INTO "Notification" ("userId", "actorId", "commentId", type, "sourceType")
+                INSERT INTO "Notification" (userid, actorid, commentid, type, sourcetype)
                 VALUES ($1, $2, $3, 'comment_reply', 'COMMENT')
                 RETURNING *;
             `;
@@ -121,8 +121,8 @@ module.exports = {
         try {
             const query = `
                 SELECT * FROM "Notification"
-                WHERE "userId" = $1
-                ORDER BY "createdAt" DESC
+                WHERE userid = $1
+                ORDER BY createdat DESC
                 OFFSET $2 LIMIT $3;
             `;
             const { rows } = await pool.query(query, [userId, offset, limit]);

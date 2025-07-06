@@ -16,10 +16,10 @@ router.get('/', realmsController.getAllRealms);
 router.post('/', realmsController.createRealm);
 
 // Update a realm by ID
-router.put('/:id', isAuthorized("realm"), realmsController.updateRealm);
+router.put('/:id', isAuthorized, realmsController.updateRealm);
 
 // Delete a realm by ID
-router.delete('/:id', isAuthorized("realm"), realmsController.deleteRealm);
+router.delete('/:id', isAuthorized, realmsController.deleteRealm);
 
 // Retrieve a single realm by ID - get meta data: num posts, num joined, creator info 
 router.get('/:id', realmsController.getRealm);

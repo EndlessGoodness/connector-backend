@@ -56,7 +56,7 @@ module.exports = {
         try {
             const query = `
                 SELECT * FROM "Comment"
-                WHERE "postId" = $1 AND "parentId" IS NULL
+                WHERE postid = $1 AND parentid IS NULL
                 ${orderBy}
                 OFFSET $2 LIMIT $3
             `;
@@ -70,7 +70,7 @@ module.exports = {
     addRootComment: async (userId, postId, commentContent) => {
         try {
             const query = `
-                INSERT INTO "Comment" (comment, "userId", "postId")
+                INSERT INTO "Comment" (comment, userid, postid)
                 VALUES ($1, $2, $3)
                 RETURNING *;
             `;
@@ -112,7 +112,7 @@ module.exports = {
         try {
             const query = `
                 SELECT * FROM "Comment"
-                WHERE "parentId" = $1
+                WHERE parentid = $1
                 ${orderBy}
                 OFFSET $2 LIMIT $3
             `;
@@ -126,7 +126,7 @@ module.exports = {
     addNestedComment: async (userId, postId, commentContent, parentId) => {
         try {
             const query = `
-                INSERT INTO "Comment" (comment, "userId", "postId", "parentId")
+                INSERT INTO "Comment" (comment, userid, postid, parentid)
                 VALUES ($1, $2, $3, $4)
                 RETURNING *;
             `;
@@ -140,7 +140,7 @@ module.exports = {
     getPostCommentCount: async (postId) => {
         try {
             const query = `
-                SELECT COUNT(*) FROM "Comment" WHERE "postId" = $1;
+                SELECT COUNT(*) FROM "Comment" WHERE postid = $1;
             `;
             const { rows } = await pool.query(query, [postId]);
             return parseInt(rows[0].count, 10);

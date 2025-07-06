@@ -12,10 +12,10 @@ module.exports = {
         try {
             const query = `
                 SELECT r.*, u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                    (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                FROM realm r
-                LEFT JOIN "user" u ON r."creatorId" = u.id
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                    (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                FROM "Realm" r
+                LEFT JOIN "User" u ON r.creatorid = u.id
                 OFFSET $1 LIMIT $2
             `;
             const { rows } = await pool.query(query, [offset, limit]);
@@ -28,10 +28,10 @@ module.exports = {
     getSuggestedRealms: async (id, take) => {
         try {
             // Get user's followers
-            const followersRes = await pool.query('SELECT followerId FROM follows WHERE followingId = $1', [id]);
+            const followersRes = await pool.query('SELECT followerId FROM "Follow" WHERE followingId = $1', [id]);
             const userFollowersId = followersRes.rows.map(row => row.followerid);
             // Get joined realms
-            const joinedRes = await pool.query('SELECT "realmId" FROM joinedrealms WHERE "joinerId" = $1', [id]);
+            const joinedRes = await pool.query('SELECT realmid FROM joinedrealms WHERE joinerid = $1', [id]);
             const joinedRealmIds = joinedRes.rows.map(row => row.realmid);
 
             // Find mutual realms (joined by user's followers, not already joined by user)
@@ -39,13 +39,13 @@ module.exports = {
             if (userFollowersId.length > 0) {
                 const mutualQuery = `
                     SELECT r.*, u.*, 
-                        (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                        (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                    FROM realm r
-                    LEFT JOIN "user" u ON r."creatorId" = u.id
+                        (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                        (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                    FROM "Realm" r
+                    LEFT JOIN "User" u ON r.creatorid = u.id
                     WHERE r.id NOT IN (${joinedRealmIds.length ? joinedRealmIds.map((_,i)=>`$${i+2}`).join(',') : 'NULL'})
                       AND r.id IN (
-                        SELECT DISTINCT "realmId" FROM joinedrealms WHERE "joinerId" = ANY($1::uuid[])
+                        SELECT DISTINCT realmid FROM joinedrealms WHERE joinerid = ANY($1::uuid[])
                     )
                     ORDER BY joined_count DESC
                     LIMIT $${joinedRealmIds.length+2}
@@ -59,10 +59,10 @@ module.exports = {
                 const excludeIds = [...(mutualRealms.map(r=>r.id)), ...joinedRealmIds];
                 const popQuery = `
                     SELECT r.*, u.*, 
-                        (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                        (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                    FROM realm r
-                    LEFT JOIN "user" u ON r."creatorId" = u.id
+                        (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                        (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                    FROM "Realm" r
+                    LEFT JOIN "User" u ON r.creatorid = u.id
                     WHERE r.id NOT IN (${excludeIds.length ? excludeIds.map((_,i)=>`$${i+1}`).join(',') : 'NULL'})
                     ORDER BY joined_count DESC, posts_count DESC
                     LIMIT $${excludeIds.length+1}
@@ -82,12 +82,12 @@ module.exports = {
         try {
             const query = `
                 SELECT r.*, u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                    (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                FROM realm r
-                LEFT JOIN "user" u ON r."creatorId" = u.id
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                    (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                FROM "Realm" r
+                LEFT JOIN "User" u ON r.creatorid = u.id
                 WHERE r.id IN (
-                    SELECT "realmId" FROM joinedrealms WHERE "joinerId" = $1
+                    SELECT realmid FROM joinedrealms WHERE joinerid = $1
                 )
                 OFFSET $2 LIMIT $3
             `;
@@ -103,11 +103,11 @@ module.exports = {
         try {
             const query = `
                 SELECT r.*, u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                    (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                FROM realm r
-                LEFT JOIN "user" u ON r."creatorId" = u.id
-                WHERE r."creatorId" = $1
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                    (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                FROM "Realm" r
+                LEFT JOIN "User" u ON r.creatorid = u.id
+                WHERE r.creatorid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(query, [userId, offset, limit]);
@@ -120,7 +120,7 @@ module.exports = {
     createRealm: async (creatorId, name, description) => {
         try {
             const query = `
-                INSERT INTO realm ("creatorId", name, description, "realmPictureUrl", "realmPicturePublicId")
+                INSERT INTO "Realm" (creatorid, name, description, realmpictureurl, realmpicturepublicid)
                 VALUES ($1, $2, $3, $4, $5)
                 RETURNING *
             `;
@@ -140,7 +140,7 @@ module.exports = {
     updateRealm: async (id, name, description) => {
         try {
             const query = `
-                UPDATE realm
+                UPDATE "Realm"
                 SET name = $1, description = $2
                 WHERE id = $3
                 RETURNING *
@@ -155,7 +155,7 @@ module.exports = {
     deleteRealm: async (id) => {
         try {
             const query = `
-                DELETE FROM realm
+                DELETE FROM "Realm"
                 WHERE id = $1
                 RETURNING *
             `;
@@ -170,10 +170,10 @@ module.exports = {
         try {
             const query = `
                 SELECT r.*, u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."realmId" = r.id) AS posts_count,
-                    (SELECT COUNT(*) FROM joinedrealms j WHERE j."realmId" = r.id) AS joined_count
-                FROM realm r
-                LEFT JOIN "user" u ON r."creatorId" = u.id
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.realmid = r.id) AS posts_count,
+                    (SELECT COUNT(*) FROM joinedrealms j WHERE j.realmid = r.id) AS joined_count
+                FROM "Realm" r
+                LEFT JOIN "User" u ON r.creatorid = u.id
                 WHERE r.id = $1
             `;
             const { rows } = await pool.query(query, [id]);
@@ -185,7 +185,7 @@ module.exports = {
     },
     getRealmPicturePublicId: async (id) => {
         try {
-            const query = `SELECT "realmPicturePublicId" FROM realm WHERE id = $1`;
+            const query = `SELECT realmpicturepublicid FROM "Realm" WHERE id = $1`;
             const { rows } = await pool.query(query, [id]);
             return rows[0]?.realmPicturePublicId;
         } catch (error) {
@@ -196,8 +196,8 @@ module.exports = {
     updateRealmPicture: async (id, url, public_id) => {
         try {
             const query = `
-                UPDATE realm
-                SET "realmPictureUrl" = $1, "realmPicturePublicId" = $2
+                UPDATE "Realm"
+                SET realmpictureurl = $1, realmpicturepublicid = $2
                 WHERE id = $3
                 RETURNING *
             `;
@@ -210,7 +210,7 @@ module.exports = {
     },
     existRealm: async (colName, value) => {
         try {
-            const query = `SELECT * FROM realm WHERE "${colName}" = $1`;
+            const query = `SELECT * FROM "Realm" WHERE "${colName}" = $1`;
             const { rows } = await pool.query(query, [value]);
             return rows[0];
         } catch (error) {

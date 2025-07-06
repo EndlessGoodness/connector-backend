@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../utils/configs/multer-config');
-const imagesControllers = require('../controllers/imagesControllers');
+const upload = require('../utils/multer-config');
+const imagesControllers = require('../controllers/imagesController');
 const isAuthorized= function (req, res, next) {
     if (req.user) {
         return next();
@@ -23,10 +23,10 @@ router.delete('/', imagesControllers.deletePostImages);
 router.put('/profile-picture', upload.single('profilePicture'), imagesControllers.updateUserProfilePicture);
 
 // User who created realm to upload + update profile photo for realm - requires a realmId as req body
-router.put('/:id/realm-picture', isAuthorized("realm"), upload.single('realmPicture'), imagesControllers.updateRealmPicture);
+router.put('/:id/realm-picture', isAuthorized, upload.single('realmPicture'), imagesControllers.updateRealmPicture);
 
 
 // Endpoint for sender user to upload images for socket
-router.post('/:id/socket/upload', isAuthorized("user"), upload.single('socketImage'), imagesControllers.uploadSocketImage);
+router.post('/:id/socket/upload', isAuthorized, upload.single('socketImage'), imagesControllers.uploadSocketImage);
 
 module.exports = router;

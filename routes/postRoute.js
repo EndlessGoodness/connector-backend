@@ -1,14 +1,17 @@
 const postsControllers = require('../controllers/postController');
-const upload = require('../utils/configs/multer-config');
+const upload = require('../utils/multer-config');
 
 const express = require('express');
-const isAuthorized= ()=>{
-    if(locals.user){
-        return true;
-    }else{
-        return false;
+
+// Simple middleware to check if user is authenticated
+const isAuthorized = (req, res, next) => {
+    if (req.user) {
+        return next();
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 };
+
 const router = express.Router();
 
 // List all posts
@@ -27,10 +30,10 @@ router.get('/:id/comments', postsControllers.getPostRootComments);
 router.get('/:id/liked', postsControllers.getPostLikedUsers);
 
 // Update a post
-router.put('/:id', isAuthorized("post"), postsControllers.updatePost);
+router.put('/:id', isAuthorized, postsControllers.updatePost);
 
 // Delete a post
-router.delete('/:id', isAuthorized("post"), postsControllers.deletePost);
+router.delete('/:id', isAuthorized, postsControllers.deletePost);
 
 // Logged user to create a new post
 router.post('/', postsControllers.createPost);

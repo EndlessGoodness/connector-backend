@@ -12,7 +12,7 @@ module.exports = {
     joinRealm: async (joinerId, realmId) => {
         try {
             const query = `
-                INSERT INTO "JoinRealm" ("joinerId", "realmId")
+                INSERT INTO "JoinRealm" (joinerid, realmid)
                 VALUES ($1, $2)
                 RETURNING *;
             `;
@@ -27,7 +27,7 @@ module.exports = {
         try {
             const query = `
                 DELETE FROM "JoinRealm"
-                WHERE "joinerId" = $1 AND "realmId" = $2
+                WHERE joinerid = $1 AND realmid = $2
                 RETURNING *;
             `;
             const { rows } = await pool.query(query, [joinerId, realmId]);

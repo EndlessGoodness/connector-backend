@@ -1,9 +1,9 @@
 const { validationResult } = require("express-validator");
 const usersQueries = require('../queries/usersQueries');
-const followsQueries = require('../queries/followsQueries');
-const postsQueries = require('../queries/postsQueries');
-const realmsQueries = require('../queries/realmsQueries');
-const notificationQueries = require('../queries/notificationQueries');
+const followsQueries = require('../queries/followsQuery');
+const postsQueries = require('../queries/postsQuery');
+const realmsQueries = require('../queries/realmsQuery');
+const notificationQueries = require('../queries/notificationsQuery');
 
 module.exports = {
     getAllUsers: async(req, res) => {

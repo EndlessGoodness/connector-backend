@@ -1,4 +1,4 @@
- const searchQueries = require("../queries/searchQueries");
+ const searchQueries = require("../queries/searchQuery");
 
 module.exports = {
     getSearchResults: async (req, res) => {

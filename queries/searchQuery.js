@@ -12,7 +12,7 @@ module.exports = {
         try {
             if (type === 'users') {
                 const usersQuery = `
-                    SELECT * FROM "user"
+                    SELECT * FROM "User"
                     WHERE username ILIKE $1 OR bio ILIKE $1
                     OFFSET $2 LIMIT $3
                 `;
@@ -20,7 +20,7 @@ module.exports = {
                 return rows;
             } else if (type === 'realms') {
                 const realmsQuery = `
-                    SELECT * FROM realm
+                    SELECT * FROM "Realm"
                     WHERE name ILIKE $1 OR description ILIKE $1
                     OFFSET $2 LIMIT $3
                 `;
@@ -29,9 +29,9 @@ module.exports = {
             } else if (type === 'posts') {
                 const postsQuery = `
                     SELECT p.*, u.*, i.*
-                    FROM post p
-                    LEFT JOIN "user" u ON p."authorId" = u.id
-                    LEFT JOIN images i ON i."postId" = p.id
+                    FROM "Post" p
+                    LEFT JOIN "User" u ON p.authorid = u.id
+                    LEFT JOIN images i ON i.postid = p.id
                     WHERE p.title ILIKE $1 OR p.text ILIKE $1
                     OFFSET $2 LIMIT $3
                 `;
@@ -39,13 +39,13 @@ module.exports = {
                 return rows;
             } else if (type === 'all') {
                 // Users
-                const usersQuery = `SELECT * FROM "user" WHERE username ILIKE $1 OR bio ILIKE $1 LIMIT $2`;
-                const realmsQuery = `SELECT * FROM realm WHERE name ILIKE $1 OR description ILIKE $1 LIMIT $2`;
+                const usersQuery = `SELECT * FROM "User" WHERE username ILIKE $1 OR bio ILIKE $1 LIMIT $2`;
+                const realmsQuery = `SELECT * FROM "Realm" WHERE name ILIKE $1 OR description ILIKE $1 LIMIT $2`;
                 const postsQuery = `
                     SELECT p.*, u.*, i.*
-                    FROM post p
-                    LEFT JOIN "user" u ON p."authorId" = u.id
-                    LEFT JOIN images i ON i."postId" = p.id
+                    FROM "Post" p
+                    LEFT JOIN "User" u ON p.authorid = u.id
+                    LEFT JOIN images i ON i.postid = p.id
                     WHERE p.title ILIKE $1 OR p.text ILIKE $1
                     LIMIT $2
                 `;

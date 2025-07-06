@@ -1,4 +1,4 @@
-const notificationQueries = require("../queries/notificationQueries");
+const notificationQueries = require('../queries/notificationsQuery');
 
 module.exports = {
     getNotifications: async (req, res) => {

@@ -1,14 +1,15 @@
-const isAuthorized= function (req, res, next) {
+const express = require('express');
+const router = express.Router();
+const usersControllers = require("../controllers/usersController");
+const { validateUserUpdate } = require('../utils/validator');
+
+const isAuthorized = function (req, res, next) {
     if (req.user) {
         return next();
     } else {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 }
-
-const express = require('express');
-const router = express.Router();
-const usersControllers = require("../controllers/usersController");
 
 // List all users
 router.get('/', usersControllers.getAllUsers);
@@ -20,7 +21,7 @@ router.get('/:id', usersControllers.getUser);
 router.get('/:id/posts', usersControllers.getUserPosts);
 
 // Get all drafts from a user
-router.get('/:id/drafts', isAuthorized("user"), usersControllers.getUserDrafts);
+router.get('/:id/drafts', isAuthorized, usersControllers.getUserDrafts);
 
 // Get specific posts user liked including the Post details
 router.get('/:id/liked', usersControllers.getUserLikedPosts);
@@ -38,10 +39,10 @@ router.get('/:id/following', usersControllers.getUserFollowing);
 router.get('/:id/joined', usersControllers.getUserJoinedRealms);
 
 // Update a user
-router.put('/:id', isAuthorized("user"), [validateUserUpdate, usersControllers.updateUser]);
+router.put('/:id', isAuthorized, validateUserUpdate, usersControllers.updateUser);
 
 // Delete a user
-router.delete('/:id', isAuthorized("user"), usersControllers.deleteUser);
+router.delete('/:id', isAuthorized, usersControllers.deleteUser);
 
 // Follow a user
 router.post('/:id/follow', usersControllers.loggedUserFollow);

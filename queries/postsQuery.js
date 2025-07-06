@@ -16,18 +16,18 @@ module.exports = {
         if (sortField === 'comments' || sortField === 'likes') {
             orderClause = `ORDER BY ${sortField}_count ${sortOrder.toUpperCase()}`;
         } else {
-            orderClause = `ORDER BY "${sortField}" ${sortOrder.toUpperCase()}`;
+            orderClause = `ORDER BY p.${sortField} ${sortOrder.toUpperCase()}`;
         }
         try {
             const postsQuery = `
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
                 WHERE p.published = true
                 ${orderClause}
                 OFFSET $1 LIMIT $2
@@ -52,15 +52,15 @@ module.exports = {
                 SELECT DISTINCT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
                 WHERE p.published = true
                   AND (
-                    p."authorId" = ANY($1::uuid[])
-                    OR p."realmId" = ANY($2::uuid[])
+                    p.authorid = ANY($1::uuid[])
+                    OR p.realmid = ANY($2::uuid[])
                   )
                 ${orderClause}
                 OFFSET $3 LIMIT $4
@@ -85,12 +85,12 @@ module.exports = {
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
-                WHERE p."authorId" = $1 AND p.published = true
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
+                WHERE p.authorid = $1 AND p.published = true
                 ${orderClause}
                 OFFSET $2 LIMIT $3
             `;
@@ -114,12 +114,12 @@ module.exports = {
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
-                WHERE p."authorId" = $1 AND p.published = false
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
+                WHERE p.authorid = $1 AND p.published = false
                 ${orderClause}
                 OFFSET $2 LIMIT $3
             `;
@@ -143,14 +143,14 @@ module.exports = {
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
                 WHERE p.published = true
                   AND p.id IN (
-                    SELECT l."postId" FROM likes l WHERE l."userId" = $1
+                    SELECT l.postid FROM "Like" l WHERE l.userid = $1
                   )
                 ${orderClause}
                 OFFSET $2 LIMIT $3
@@ -175,18 +175,18 @@ module.exports = {
                 SELECT DISTINCT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
                 WHERE p.published = true
                   AND (
-                    p.id IN (SELECT c."postId" FROM comments c WHERE c."userId" = $1)
+                    p.id IN (SELECT c.postid FROM "Comment" c WHERE c.userid = $1)
                     OR p.id IN (
-                        SELECT c2."postId" FROM comments c2
+                        SELECT c2.postid FROM "Comment" c2
                         WHERE c2.id IN (
-                            SELECT nc."parentId" FROM comments nc WHERE nc."userId" = $1 AND nc."parentId" IS NOT NULL
+                            SELECT nc.parentid FROM "Comment" nc WHERE nc.userid = $1 AND nc.parentid IS NOT NULL
                         )
                     )
                   )
@@ -213,12 +213,12 @@ module.exports = {
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."postId" = p.id) AS comments_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
-                WHERE p."realmId" = $1 AND p.published = true
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.postid = p.id) AS comments_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
+                WHERE p.realmid = $1 AND p.published = true
                 ${orderClause}
                 OFFSET $2 LIMIT $3
             `;
@@ -235,10 +235,10 @@ module.exports = {
                 SELECT p.*, 
                     r.*, 
                     a.*, 
-                    (SELECT COUNT(*) FROM likes l WHERE l."postId" = p.id) AS likes_count
-                FROM post p
-                LEFT JOIN realm r ON p."realmId" = r.id
-                LEFT JOIN "user" a ON p."authorId" = a.id
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.postid = p.id) AS likes_count
+                FROM "Post" p
+                LEFT JOIN "Realm" r ON p.realmid = r.id
+                LEFT JOIN "User" a ON p.authorid = a.id
                 WHERE p.id = $1
             `;
             const { rows } = await pool.query(postQuery, [id]);
@@ -255,7 +255,7 @@ module.exports = {
         const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
         try {
             const insertQuery = `
-                INSERT INTO post (${fields.map(f => `"${f}"`).join(', ')})
+                INSERT INTO "Post" (${fields.map(f => `"${f}"`).join(', ')})
                 VALUES (${placeholders})
                 RETURNING *
             `;
@@ -273,7 +273,7 @@ module.exports = {
         const setClause = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
         try {
             const updateQuery = `
-                UPDATE post
+                UPDATE "Post"
                 SET ${setClause}
                 WHERE id = $${fields.length + 1}
                 RETURNING *
@@ -288,7 +288,7 @@ module.exports = {
     deletePost: async (id) => {
         try {
             const deleteQuery = `
-                DELETE FROM post
+                DELETE FROM "Post"
                 WHERE id = $1
                 RETURNING *
             `;

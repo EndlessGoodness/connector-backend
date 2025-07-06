@@ -1,6 +1,7 @@
 require("dotenv").config();
 const bcrypt = require('bcryptjs');
 const path = require("node:path");
+const http = require('http');
 
 const { Pool } = require("pg");
 
@@ -20,7 +21,7 @@ const realmsRoutes = require("./routes/realmRoute");
 
 const { validateUser } = require('./utils/validator');
 const { validationResult } = require('express-validator');
-const notificationRoutes = require('./routes/notificationsRoutes');
+const notificationRoutes = require('./routes/notificationRoute');
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -31,14 +32,16 @@ const pool = new Pool({
 });
 const app = express();
 
+const server = http.createServer(app);
+// --- SOCKET.IO SETUP ---
+const socketSetup = require('./utils/socket');
 socketSetup(server);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
+app.use(session({ secret: process.env.SESSION_SECRET || "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
-app.use(express.urlencoded({ extended: false }));
 
 const FRONTEND_URL =
   process.env.NODE_ENV === 'production'
@@ -54,10 +57,7 @@ app.use(cors({
 
   console.log("using frontendurl:", FRONTEND_URL);
 
-app.use((req,res,next) => {
-  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-  next();
-});
+// Body parsing middleware
 app.use(express.json()); // For JSON payloads
 app.use(express.urlencoded({ extended: true })); // For application/x-www-form-urlencoded form-data
 
@@ -82,7 +82,7 @@ app.post(
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
       await pool.query(
-        "INSERT INTO user (email, username, password) VALUES ($1, $2, $3)",
+        "INSERT INTO \"User\" (email, username, password) VALUES ($1, $2, $3)",
         [req.body.email, req.body.username, hashedPassword]
       );
       res.redirect("/");
@@ -95,7 +95,7 @@ app.post(
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
-      const { rows } = await pool.query("SELECT * FROM user WHERE username = $1", [username]);
+      const { rows } = await pool.query("SELECT * FROM \"User\" WHERE username = $1", [username]);
       const user = rows[0];
 
       if (!user) {
@@ -118,7 +118,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM user WHERE id = $1", [id]);
+    const { rows } = await pool.query("SELECT * FROM \"User\" WHERE id = $1", [id]);
     const user = rows[0];
 
     done(null, user);
@@ -146,7 +146,13 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/'); // or res.status(401).json({ message: 'Unauthorized' });
+  
+  // Check if it's an API request (JSON) or a web request
+  if (req.accepts('json') && !req.accepts('html')) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  res.redirect('/'); // For web requests
 }
 app.use('/users', ensureAuthenticated, usersRoutes);
 app.use('/posts', ensureAuthenticated, postsRoutes);
@@ -170,4 +176,4 @@ app.use((err, req, res, next) => {
     });
 });  
 
-app.listen(3000, () => console.log("app listening on port 3000!"));
+server.listen(3000, () => console.log('app listening on port 3000!'));

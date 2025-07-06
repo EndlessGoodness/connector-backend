@@ -1,8 +1,8 @@
-const joinRealmsQueries = require("../queries/joinRealmsQueries");
-const realmsQueries = require("../queries/realmsQueries");
+const joinRealmsQueries = require('../queries/joinRealmsQuery');
+const realmsQueries = require("../queries/realmsQuery");
 const usersQueries = require("../queries/usersQueries");
-const postsQueries = require("../queries/postsQueries");
-const notificationQueries = require("../queries/notificationQueries");
+const postsQueries = require("../queries/postsQuery");
+const notificationQueries = require("../queries/notificationsQuery");
 
 module.exports = {
     getAllRealms: async (req, res) => {

@@ -1,9 +1,9 @@
-const postsQueries = require("../queries/postsQueries");
+const postsQueries = require("../queries/postsQuery");
 const likesQueries = require('../queries/likesQueries');
-const commentsQueries = require('../queries/commentsQueries');
+const commentsQueries = require('../queries/commentsQuery');
 const usersQueries = require("../queries/usersQueries");
-const realmsQueries = require("../queries/realmsQueries");
-const notificationQueries = require("../queries/notificationQueries");
+const realmsQueries = require("../queries/realmsQuery");
+const notificationQueries = require("../queries/notificationsQuery");
 
 module.exports = {
     getAllPosts: async (req, res) => {

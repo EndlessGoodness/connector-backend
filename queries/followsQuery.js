@@ -12,7 +12,7 @@ module.exports = {
     addFollow: async (followerId, followingId) => {
         try {
             const query = `
-                INSERT INTO "Follow" ("followerId", "followingId")
+                INSERT INTO "Follow" (followerid, followingid)
                 VALUES ($1, $2)
                 RETURNING *;
             `;
@@ -27,7 +27,7 @@ module.exports = {
         try {
             const query = `
                 DELETE FROM "Follow"
-                WHERE "followerId" = $1 AND "followingId" = $2
+                WHERE followerid = $1 AND followingid = $2
                 RETURNING *;
             `;
             const { rows } = await pool.query(query, [followerId, followingId]);

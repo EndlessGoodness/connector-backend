@@ -1,0 +1,243 @@
+{
+  "timestamp": "2025-07-06T17:21:50.668Z",
+  "duration": "0.37s",
+  "summary": {
+    "total": 46,
+    "success": 23,
+    "warnings": 0,
+    "errors": 1
+  },
+  "health_score": "95.8",
+  "details": [
+    {
+      "timestamp": "2025-07-06T17:21:50.297Z",
+      "message": "Starting comprehensive backend health check...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.298Z",
+      "message": "Running Server Availability test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.299Z",
+      "message": "Testing server availability...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.338Z",
+      "message": "Server is responding (HTTP 200)",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.338Z",
+      "message": "Running Database Connectivity test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.339Z",
+      "message": "Testing database connectivity...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.389Z",
+      "message": "Database connected successfully (PostgreSQL)",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.390Z",
+      "message": "Database time: Sun Jul 06 2025 22:51:50 GMT+0530 (India Standard Time)",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.390Z",
+      "message": "Running Critical Tables test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.390Z",
+      "message": "Checking critical database tables...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.399Z",
+      "message": "Table \"User\" exists",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.401Z",
+      "message": "Table \"Post\" exists",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.404Z",
+      "message": "Table \"Comment\" exists",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.405Z",
+      "message": "Table \"Realm\" exists",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.406Z",
+      "message": "Table \"Notification\" exists",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.407Z",
+      "message": "Running Data Integrity test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.407Z",
+      "message": "Checking data integrity...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.411Z",
+      "message": "Found 5 users in database",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.413Z",
+      "message": "Found 8 posts in database",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.415Z",
+      "message": "Data integrity check failed: column p.userId does not exist",
+      "type": "error"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.415Z",
+      "message": "Running Authentication System test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.416Z",
+      "message": "Testing authentication system...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.562Z",
+      "message": "Authentication system is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.563Z",
+      "message": "Running Critical Endpoints test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.563Z",
+      "message": "Testing critical endpoints...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.635Z",
+      "message": "Endpoint Home is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.643Z",
+      "message": "Endpoint Users is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.650Z",
+      "message": "Endpoint Posts is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.657Z",
+      "message": "Endpoint Search is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.664Z",
+      "message": "Endpoint Notifications is working",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.664Z",
+      "message": "Running System Resources test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.665Z",
+      "message": "Checking system resources...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.665Z",
+      "message": "Process memory: 48.11 MB RSS, 9.68 MB Heap",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.665Z",
+      "message": "System memory: 2.73 GB free of 15.71 GB total",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.666Z",
+      "message": "CPU load average: 0.00",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.666Z",
+      "message": "Database pool: 0 total, 0 idle",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.666Z",
+      "message": "Running Environment Variables test...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.666Z",
+      "message": "Checking environment variables...",
+      "type": "info"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable DB_HOST is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable DB_USER is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable DB_NAME is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable DB_PASSWORD is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable DB_PORT is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable SESSION_SECRET is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable CLOUDINARY_CLOUD_NAME is set",
+      "type": "success"
+    },
+    {
+      "timestamp": "2025-07-06T17:21:50.667Z",
+      "message": "Environment variable CLOUDINARY_API_KEY is set",
+      "type": "success"
+    }
+  ]
+}

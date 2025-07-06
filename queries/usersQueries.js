@@ -9,7 +9,7 @@ const pool = new Pool({ connectionString: databaseUrl });
 module.exports = {
     getAllUsers: async () => {
         try {
-            const { rows } = await pool.query('SELECT * FROM "user"');
+            const { rows } = await pool.query('SELECT * FROM "User"');
             return rows;
         } catch (error) {
             console.error('Error getting users:', error);
@@ -18,7 +18,7 @@ module.exports = {
     },
     existUser: async (colName, query) => {
         try {
-            const sql = `SELECT * FROM "user" WHERE "${colName}" = $1`;
+            const sql = `SELECT * FROM "User" WHERE "${colName}" = $1`;
             const { rows } = await pool.query(sql, [query]);
             return rows[0];
         } catch (error) {
@@ -29,8 +29,8 @@ module.exports = {
     getSuggestedUsers: async (id, take) => {
         try {
             // Get user's followers and following
-            const followersRes = await pool.query('SELECT followerId FROM follows WHERE followingId = $1', [id]);
-            const followingRes = await pool.query('SELECT followingId FROM follows WHERE followerId = $1', [id]);
+            const followersRes = await pool.query('SELECT followerId FROM "Follow" WHERE followingId = $1', [id]);
+            const followingRes = await pool.query('SELECT followingId FROM "Follow" WHERE followerId = $1', [id]);
             const userFollowersIds = followersRes.rows.map(row => row.followerid);
             const userFollowingIds = followingRes.rows.map(row => row.followingid);
 
@@ -39,17 +39,17 @@ module.exports = {
             if (userFollowersIds.length > 0 || userFollowingIds.length > 0) {
                 const mutualQuery = `
                     SELECT u.*, 
-                        (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                        (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                        (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                        (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                        (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                    FROM "user" u
+                        (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                        (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                        (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                        (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                        (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                    FROM "User" u
                     WHERE u.id != $1
                       AND u.id NOT IN (${userFollowingIds.length ? userFollowingIds.map((_,i)=>`$${i+2}`).join(',') : 'NULL'})
                       AND (
-                        u.id IN (SELECT f."followingId" FROM follows f WHERE f."followerId" = ANY($2::uuid[]))
-                        OR u.id IN (SELECT f."followingId" FROM follows f WHERE f."followerId" = ANY($3::uuid[]))
+                        u.id IN (SELECT f.followingid FROM "Follow" f WHERE f.followerid = ANY($2::uuid[]))
+                        OR u.id IN (SELECT f.followingid FROM "Follow" f WHERE f.followerid = ANY($3::uuid[]))
                       )
                     ORDER BY followers_count DESC
                     LIMIT $${userFollowingIds.length+4}
@@ -63,12 +63,12 @@ module.exports = {
                 const excludeIds = [id, ...suggestedUsers.map(u=>u.id), ...userFollowingIds];
                 const popQuery = `
                     SELECT u.*, 
-                        (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                        (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                        (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                        (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                        (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                    FROM "user" u
+                        (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                        (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                        (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                        (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                        (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                    FROM "User" u
                     WHERE u.id NOT IN (${excludeIds.map((_,i)=>`$${i+1}`).join(',')})
                     ORDER BY followers_count DESC
                     LIMIT $${excludeIds.length+1}
@@ -86,12 +86,12 @@ module.exports = {
     getUser: async (colName, query) => {
         try {
             const sql = `SELECT u.*, 
-                (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                FROM "user" u WHERE u."${colName}" = $1`;
+                (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                FROM "User" u WHERE u."${colName}" = $1`;
             const { rows } = await pool.query(sql, [query]);
             return rows[0];
         } catch (error) {
@@ -108,7 +108,7 @@ module.exports = {
                 });
             });
             const sql = `
-                INSERT INTO "user" (email, username, password, "profilePictureUrl", "profilePicturePublicId")
+                INSERT INTO "User" (email, username, password, profilepictureurl, profilepicturepublicid)
                 VALUES ($1, $2, $3, $4, $5)
                 RETURNING *
             `;
@@ -128,7 +128,7 @@ module.exports = {
     updateUser: async (id, username, bio) => {
         try {
             const sql = `
-                UPDATE "user"
+                UPDATE "User"
                 SET username = $1, bio = $2
                 WHERE id = $3
                 RETURNING *
@@ -142,7 +142,7 @@ module.exports = {
     },
     deleteUser: async (id) => {
         try {
-            const sql = `DELETE FROM "user" WHERE id = $1 RETURNING *`;
+            const sql = `DELETE FROM "User" WHERE id = $1 RETURNING *`;
             const { rows } = await pool.query(sql, [id]);
             return rows[0];
         } catch (error) {
@@ -155,14 +155,14 @@ module.exports = {
         try {
             const sql = `
                 SELECT u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                FROM follows f
-                JOIN "user" u ON f."followerId" = u.id
-                WHERE f."followingId" = $1
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                FROM "Follow" f
+                JOIN "User" u ON f.followerid = u.id
+                WHERE f.followingid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(sql, [id, offset, limit || 10]);
@@ -177,14 +177,14 @@ module.exports = {
         try {
             const sql = `
                 SELECT u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                FROM follows f
-                JOIN "user" u ON f."followingId" = u.id
-                WHERE f."followerId" = $1
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                FROM "Follow" f
+                JOIN "User" u ON f.followingid = u.id
+                WHERE f.followerid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(sql, [id, offset, limit || 10]);
@@ -199,14 +199,14 @@ module.exports = {
         try {
             const sql = `
                 SELECT u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
-                FROM likes l
-                JOIN "user" u ON l."userId" = u.id
-                WHERE l."postId" = $1
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
+                FROM "Like" l
+                JOIN "User" u ON l.userid = u.id
+                WHERE l.postid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(sql, [postId, offset, limit]);
@@ -221,14 +221,14 @@ module.exports = {
         try {
             const sql = `
                 SELECT u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
                 FROM commentlikes cl
-                JOIN "user" u ON cl."userId" = u.id
-                WHERE cl."commentId" = $1
+                JOIN "User" u ON cl.userid = u.id
+                WHERE cl.commentid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(sql, [commentId, offset, limit]);
@@ -243,14 +243,14 @@ module.exports = {
         try {
             const sql = `
                 SELECT u.*, 
-                    (SELECT COUNT(*) FROM post p WHERE p."authorId" = u.id AND p.published = true) AS posts_count,
-                    (SELECT COUNT(*) FROM likes l WHERE l."userId" = u.id) AS likes_count,
-                    (SELECT COUNT(*) FROM comments c WHERE c."userId" = u.id) AS comments_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followingId" = u.id) AS followers_count,
-                    (SELECT COUNT(*) FROM follows f WHERE f."followerId" = u.id) AS following_count
+                    (SELECT COUNT(*) FROM "Post" p WHERE p.authorid = u.id AND p.published = true) AS posts_count,
+                    (SELECT COUNT(*) FROM "Like" l WHERE l.userid = u.id) AS likes_count,
+                    (SELECT COUNT(*) FROM "Comment" c WHERE c.userid = u.id) AS comments_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followingid = u.id) AS followers_count,
+                    (SELECT COUNT(*) FROM "Follow" f WHERE f.followerid = u.id) AS following_count
                 FROM joinedrealms jr
-                JOIN "user" u ON jr."joinerId" = u.id
-                WHERE jr."realmId" = $1
+                JOIN "User" u ON jr.joinerid = u.id
+                WHERE jr.realmid = $1
                 OFFSET $2 LIMIT $3
             `;
             const { rows } = await pool.query(sql, [realmId, offset, limit]);
@@ -262,7 +262,7 @@ module.exports = {
     },
     getUserProfilePicturePublicId: async (id) => {
         try {
-            const sql = 'SELECT "profilePicturePublicId" FROM "user" WHERE id = $1';
+            const sql = 'SELECT profilepicturepublicid FROM "User" WHERE id = $1';
             const { rows } = await pool.query(sql, [id]);
             return rows[0]?.profilePicturePublicId;
         } catch (error) {
@@ -273,8 +273,8 @@ module.exports = {
     updateUserProfilePicture: async (id, url, public_id) => {
         try {
             const sql = `
-                UPDATE "user"
-                SET "profilePictureUrl" = $1, "profilePicturePublicId" = $2
+                UPDATE "User"
+                SET profilepictureurl = $1, profilepicturepublicid = $2
                 WHERE id = $3
                 RETURNING *
             `;

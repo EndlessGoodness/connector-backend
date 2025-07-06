@@ -1,0 +1,155 @@
+{
+  "score": 17,
+  "maxScore": 37,
+  "percentage": 45.9,
+  "status": "Not Ready",
+  "checks": [
+    {
+      "category": "Security",
+      "item": "SESSION_SECRET environment variable",
+      "status": "pass",
+      "message": "Properly configured",
+      "weight": 1
+    },
+    {
+      "category": "Security",
+      "item": "DB_PASSWORD strength",
+      "status": "warning",
+      "message": "Environment variable should be longer for security",
+      "weight": 2
+    },
+    {
+      "category": "Security",
+      "item": "CLOUDINARY_API_SECRET environment variable",
+      "status": "pass",
+      "message": "Properly configured",
+      "weight": 1
+    },
+    {
+      "category": "Security",
+      "item": "Password Hashing",
+      "status": "pass",
+      "message": "Passwords are properly hashed with bcrypt",
+      "weight": 3
+    },
+    {
+      "category": "Security",
+      "item": "SQL Injection Protection",
+      "status": "fail",
+      "message": "Database queries may be vulnerable",
+      "weight": 5
+    },
+    {
+      "category": "Security",
+      "item": "X-Frame-Options Header",
+      "status": "warning",
+      "message": "Missing clickjacking protection",
+      "weight": 2
+    },
+    {
+      "category": "Security",
+      "item": "X-Content-Type-Options Header",
+      "status": "warning",
+      "message": "Missing MIME type protection",
+      "weight": 2
+    },
+    {
+      "category": "Performance",
+      "item": "User Table Indexes",
+      "status": "pass",
+      "message": "Found 3 indexes",
+      "weight": 2
+    },
+    {
+      "category": "Performance",
+      "item": "Post Table Indexes",
+      "status": "warning",
+      "message": "Consider adding more indexes",
+      "weight": 1
+    },
+    {
+      "category": "Performance",
+      "item": "Connection Pooling",
+      "status": "pass",
+      "message": "Pool size: 10",
+      "weight": 2
+    },
+    {
+      "category": "Performance",
+      "item": "Response Time",
+      "status": "pass",
+      "message": "6ms response time",
+      "weight": 2
+    },
+    {
+      "category": "Reliability",
+      "item": "Error Handling",
+      "status": "pass",
+      "message": "404 errors handled correctly",
+      "weight": 2
+    },
+    {
+      "category": "Reliability",
+      "item": "Database Connection",
+      "status": "pass",
+      "message": "Database connection is stable",
+      "weight": 3
+    },
+    {
+      "category": "Reliability",
+      "item": "Session Management",
+      "status": "warning",
+      "message": "Session management may have issues",
+      "weight": 2
+    },
+    {
+      "category": "Monitoring",
+      "item": "Logging",
+      "status": "warning",
+      "message": "Consider adding structured logging",
+      "weight": 1
+    },
+    {
+      "category": "Monitoring",
+      "item": "Health Check Endpoint",
+      "status": "warning",
+      "message": "Consider adding /health endpoint",
+      "weight": 1
+    },
+    {
+      "category": "Monitoring",
+      "item": "Error Monitoring",
+      "status": "warning",
+      "message": "Consider adding error monitoring (Sentry, Bugsnag)",
+      "weight": 1
+    },
+    {
+      "category": "Deployment",
+      "item": "Environment",
+      "status": "warning",
+      "message": "NODE_ENV not set to production",
+      "weight": 1
+    },
+    {
+      "category": "Deployment",
+      "item": "Start Script",
+      "status": "pass",
+      "message": "Start script configured",
+      "weight": 1
+    },
+    {
+      "category": "Deployment",
+      "item": "Node Version",
+      "status": "warning",
+      "message": "Node version not specified",
+      "weight": 1
+    },
+    {
+      "category": "Deployment",
+      "item": "Process Management",
+      "status": "warning",
+      "message": "Consider using PM2 or similar",
+      "weight": 1
+    }
+  ]
+}

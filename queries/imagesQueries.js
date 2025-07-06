@@ -12,7 +12,7 @@ module.exports = {
     uploadImage: async (imageData) => {
         try {
             const query = `
-                INSERT INTO "Image" (url, "publicId", "ownerId", "postId")
+                INSERT INTO "Image" (url, publicid, ownerid, postid)
                 VALUES ($1, $2, $3, $4)
                 RETURNING *;
             `;
