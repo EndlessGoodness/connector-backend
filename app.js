@@ -163,6 +163,239 @@ app.use('/search', ensureAuthenticated, searchRoutes);
 app.use('/realms', ensureAuthenticated, realmsRoutes);
 app.use('/notifications', ensureAuthenticated, notificationRoutes);
 
+// Special database setup endpoint for production deployment
+app.get("/setup-database", async (req, res) => {
+  try {
+    console.log('🚀 Starting database setup...');
+    
+    // Test connection
+    const testResult = await pool.query('SELECT NOW() as current_time');
+    console.log(`✅ Connected to database at: ${testResult.rows[0].current_time}`);
+    
+    let setupLog = [`✅ Connected to database at: ${testResult.rows[0].current_time}`];
+    
+    // Create tables
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "User" (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        bio TEXT,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ User table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Post" (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ Post table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Comment" (
+        id SERIAL PRIMARY KEY,
+        content TEXT NOT NULL,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "postId" INTEGER REFERENCES "Post"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ Comment table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Realm" (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        description TEXT,
+        "createdBy" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ Realm table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Notification" (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "isRead" BOOLEAN DEFAULT FALSE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ Notification table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Follow" (
+        id SERIAL PRIMARY KEY,
+        "followerId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "followingId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE("followerId", "followingId")
+      );
+    `);
+    setupLog.push('✅ Follow table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Like" (
+        id SERIAL PRIMARY KEY,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "postId" INTEGER REFERENCES "Post"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE("userId", "postId")
+      );
+    `);
+    setupLog.push('✅ Like table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "CommentLike" (
+        id SERIAL PRIMARY KEY,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "commentId" INTEGER REFERENCES "Comment"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE("userId", "commentId")
+      );
+    `);
+    setupLog.push('✅ CommentLike table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "JoinRealm" (
+        id SERIAL PRIMARY KEY,
+        "userId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "realmId" INTEGER REFERENCES "Realm"(id) ON DELETE CASCADE,
+        "joinedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE("userId", "realmId")
+      );
+    `);
+    setupLog.push('✅ JoinRealm table created');
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "Message" (
+        id SERIAL PRIMARY KEY,
+        content TEXT NOT NULL,
+        "senderId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "receiverId" INTEGER REFERENCES "User"(id) ON DELETE CASCADE,
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    setupLog.push('✅ Message table created');
+    
+    // Create indexes
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_username ON "User"(username);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_email ON "User"(email);`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_post_user ON "Post"("userId");`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_post_created ON "Post"("createdAt");`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_comment_post ON "Comment"("postId");`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_comment_user ON "Comment"("userId");`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_notification_user ON "Notification"("userId");`);
+    setupLog.push('✅ Database indexes created');
+    
+    // Check if data already exists
+    const userCount = await pool.query('SELECT COUNT(*) FROM "User"');
+    
+    if (parseInt(userCount.rows[0].count) === 0) {
+      // Insert sample users
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      
+      const users = [
+        ['johndoe', 'john@example.com', hashedPassword, 'Software developer and tech enthusiast'],
+        ['janedoe', 'jane@example.com', hashedPassword, 'UI/UX designer with a passion for user experience'],
+        ['bobsmith', 'bob@example.com', hashedPassword, 'Product manager and startup advisor'],
+        ['alicejohnson', 'alice@example.com', hashedPassword, 'Data scientist and machine learning researcher'],
+        ['charliewilson', 'charlie@example.com', hashedPassword, 'Full-stack developer and open source contributor']
+      ];
+      
+      for (const [username, email, password, bio] of users) {
+        await pool.query(
+          'INSERT INTO "User" (username, email, password, bio) VALUES ($1, $2, $3, $4)',
+          [username, email, password, bio]
+        );
+      }
+      setupLog.push('✅ Sample users created');
+      
+      // Insert sample posts
+      const posts = [
+        [1, 'Welcome to Connector!', 'This is my first post on this amazing platform. Looking forward to connecting with everyone!'],
+        [2, 'UI/UX Best Practices', 'Here are some essential UI/UX principles that every designer should know...'],
+        [1, 'Learning Node.js', 'Just finished building a REST API with Express. The learning curve was worth it!'],
+        [3, 'Product Management Tips', 'Sharing some insights from my experience in product management and team leadership.'],
+        [4, 'Data Science Trends', 'Machine learning and AI are revolutionizing how we analyze and interpret data.'],
+        [5, 'Open Source Contribution', 'Contributing to open source projects has been an amazing journey for learning and growth.'],
+        [2, 'Design Systems', 'Building consistent design systems is crucial for scaling products effectively.'],
+        [1, 'Backend Development', 'Working with databases and APIs has taught me so much about software architecture.']
+      ];
+      
+      for (const [userId, title, content] of posts) {
+        await pool.query(
+          'INSERT INTO "Post" (title, content, "userId") VALUES ($1, $2, $3)',
+          [title, content, userId]
+        );
+      }
+      setupLog.push('✅ Sample posts created');
+      
+      // Insert sample realms
+      const realms = [
+        ['Tech Talk', 'Discussions about technology and programming', 1],
+        ['Design Hub', 'UI/UX design discussions and feedback', 2],
+        ['Startup Corner', 'Entrepreneurship and startup discussions', 3],
+        ['Data Science', 'Data analysis, ML, and AI discussions', 4],
+        ['Open Source', 'Open source projects and contributions', 5]
+      ];
+      
+      for (const [name, description, createdBy] of realms) {
+        await pool.query(
+          'INSERT INTO "Realm" (name, description, "createdBy") VALUES ($1, $2, $3)',
+          [name, description, createdBy]
+        );
+      }
+      setupLog.push('✅ Sample realms created');
+      setupLog.push('✅ Sample data inserted successfully');
+    } else {
+      setupLog.push('ℹ️ Sample data already exists, skipping insertion');
+    }
+    
+    // Get final statistics
+    const stats = await Promise.all([
+      pool.query('SELECT COUNT(*) FROM "User"'),
+      pool.query('SELECT COUNT(*) FROM "Post"'),
+      pool.query('SELECT COUNT(*) FROM "Realm"')
+    ]);
+    
+    setupLog.push('🎉 Production database setup completed successfully!');
+    setupLog.push(`📊 Users: ${stats[0].rows[0].count}, Posts: ${stats[1].rows[0].count}, Realms: ${stats[2].rows[0].count}`);
+    
+    // Return success response
+    res.json({
+      success: true,
+      message: 'Database setup completed successfully!',
+      log: setupLog,
+      statistics: {
+        users: parseInt(stats[0].rows[0].count),
+        posts: parseInt(stats[1].rows[0].count),
+        realms: parseInt(stats[2].rows[0].count)
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Database setup failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database setup failed',
+      error: error.message
+    });
+  }
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack to the console
